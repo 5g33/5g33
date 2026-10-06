@@ -1,3 +1,3 @@
 <div align="center">
-  <img src="./logo.svg" alt="Animated ASCII Logo">
+  <img src="./logo.gif" alt="Animated ASCII Logo">
 </div>
