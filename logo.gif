@@ -1,0 +1,72 @@
+from PIL import Image, ImageDraw, ImageFont
+import os, math
+
+ascii_art = [
+"//           ,----,.",
+"//         ,'   ,' |            .--,-``-.      .--,-``-.",
+"//       ,'   .'   |           /   /     '.   /   /     '.",
+"//     ,----.'    .'          / ../        ; / ../        ;",
+"//     |    |   .'            \\ ``\\  .`-    '\\ ``\\  .`-    '",
+"//     :    :  |--,   ,----._,.\\___\\/   \\   : \\___\\/   \\   :",
+"//     :    |  ;.' \\ /   /  ' /     \\   :   |      \\   :   |",
+"//     |    |      ||   :     |     /  /   /       /  /   /",
+"//     `----'.'\\   ;|   | .\\  .     \\  \\   \\       \\  \\   \\",
+"//       __  \\  .  |.   ; ';  | ___ /   :   |  ___ /   :   |",
+"//     /   /\\/  /  :'   .   . |/   /\\   /   : /   /\\   /   :",
+"//   / ,,/  ',-   . `---`-'| / ,,/  ',-    ./ ,,/  ',-    .",
+"//   \\ ''\\       ;  .'__/\\_: \\ ''\\        ; \\ ''\\        ;",
+"//    \\   \\    .'   |   :    :\\   \\     .'   \\   \\     .'",
+"//     `--`-,-'      \\   \\  /  `--`-,,-'      `--`-,,-'",
+"//                     `--`-'"
+]
+
+# Find a monospace font available in the environment.
+font_candidates = [
+    "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf",
+    "/usr/share/fonts/truetype/liberation2/LiberationMono-Regular.ttf",
+]
+font_path = next((p for p in font_candidates if os.path.exists(p)), None)
+if not font_path:
+    raise FileNotFoundError("No monospace font found.")
+
+font = ImageFont.truetype(font_path, 14)
+
+# Measure text.
+dummy = Image.new("RGBA", (10, 10))
+d = ImageDraw.Draw(dummy)
+bbox = d.multiline_textbbox((0, 0), "\n".join(ascii_art), font=font, spacing=2)
+text_w = bbox[2] - bbox[0]
+text_h = bbox[3] - bbox[1]
+
+pad_x, pad_y = 28, 24
+W = text_w + pad_x * 2
+H = text_h + pad_y * 2 + 70
+
+frames = []
+# Smooth-ish bounce: 0 -> 28 -> 0, with easing.
+positions = [0, 5, 12, 20, 27, 20, 12, 5, 0]
+for yoff in positions:
+    img = Image.new("RGBA", (W, H), (13, 17, 23, 255))
+    draw = ImageDraw.Draw(img)
+    y = pad_y + yoff
+    draw.multiline_text(
+        (pad_x, y),
+        "\n".join(ascii_art),
+        font=font,
+        fill=(88, 166, 255, 255),
+        spacing=2,
+    )
+    frames.append(img)
+
+out = "/mnt/data/logo.gif"
+frames[0].save(
+    out,
+    save_all=True,
+    append_images=frames[1:],
+    duration=[110, 110, 110, 110, 110, 110, 110, 110, 180],
+    loop=0,
+    optimize=True,
+    disposal=2,
+)
+
+out, os.path.getsize(out)
